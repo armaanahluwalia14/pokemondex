@@ -1,0 +1,165 @@
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+
+public class SwingControlDemo implements ActionListener {
+    private JFrame mainFrame;
+    private JLabel statusLabel;
+    private JPanel searchPanel;   // top: name field + Search button
+    private JPanel controlPanel;  // bottom: OK / Submit / Cancel buttons
+    private JMenuBar mb;
+    private JMenu file, edit, help;
+    private JMenuItem cut, copy, paste, selectAll;
+    private JTextField nameField; // Pokemon name to look up
+    private JButton searchButton;
+    private JTextArea ta;         // typing area, also shows API results
+    private int WIDTH = 800;
+    private int HEIGHT = 700;
+
+    public SwingControlDemo() {
+        prepareGUI();
+    }
+
+    public static void main(String[] args) {
+        // Swing windows should be built on the event thread
+        SwingUtilities.invokeLater(() -> {
+            SwingControlDemo swingControlDemo = new SwingControlDemo();
+            swingControlDemo.showEventDemo();
+        });
+    }
+
+    private void prepareGUI() {
+        mainFrame = new JFrame("Java SWING Examples");
+        mainFrame.setSize(WIDTH, HEIGHT);
+        mainFrame.setLayout(new BorderLayout(5, 5));
+
+        //menu at top
+        cut = new JMenuItem("cut");
+        copy = new JMenuItem("copy");
+        paste = new JMenuItem("paste");
+        selectAll = new JMenuItem("selectAll");
+        cut.addActionListener(this);
+        copy.addActionListener(this);
+        paste.addActionListener(this);
+        selectAll.addActionListener(this);
+
+        mb = new JMenuBar();
+        file = new JMenu("File");
+        edit = new JMenu("Edit");
+        help = new JMenu("Help");
+        edit.add(cut);
+        edit.add(copy);
+        edit.add(paste);
+        edit.add(selectAll);
+        mb.add(file);
+        mb.add(edit);
+        mb.add(help);
+        mainFrame.setJMenuBar(mb); //set menu bar (only once, not as a normal component)
+        //end menu at top
+
+        // NORTH: Pokemon search row
+        searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        nameField = new JTextField("ditto", 15);
+        searchButton = new JButton("Search");
+        searchButton.addActionListener(e -> searchPokemon());
+        nameField.addActionListener(e -> searchPokemon()); // Enter key also searches
+        searchPanel.add(new JLabel("Pokemon:"));
+        searchPanel.add(nameField);
+        searchPanel.add(searchButton);
+        mainFrame.add(searchPanel, BorderLayout.NORTH);
+
+        // CENTER: typing area / results, scrolls when text gets long
+        ta = new JTextArea();
+        mainFrame.add(new JScrollPane(ta), BorderLayout.CENTER);
+
+        // SOUTH: demo buttons on top of the status line
+        statusLabel = new JLabel("", JLabel.CENTER);
+        controlPanel = new JPanel();
+        controlPanel.setLayout(new FlowLayout()); //set the layout of the pannel
+        JPanel southPanel = new JPanel(new GridLayout(2, 1));
+        southPanel.add(controlPanel);
+        southPanel.add(statusLabel);
+        mainFrame.add(southPanel, BorderLayout.SOUTH);
+
+        mainFrame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent windowEvent) {
+                System.exit(0);
+            }
+        });
+        mainFrame.setVisible(true);
+    }
+
+    // Calls the API on a background thread so the window does not freeze
+    private void searchPokemon() {
+        final String name = nameField.getText();
+        searchButton.setEnabled(false);
+        statusLabel.setText("Loading " + name.trim() + "...");
+
+        new SwingWorker<String, Void>() {
+            @Override
+            protected String doInBackground() throws Exception {
+                return ReadJson.describe(ReadJson.fetchPokemon(name));
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    ta.setText(get());
+                    statusLabel.setText("Loaded " + name.trim().toLowerCase() + ".");
+                } catch (Exception ex) {
+                    Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+                    statusLabel.setText("Error: " + cause.getMessage());
+                } finally {
+                    searchButton.setEnabled(true);
+                }
+            }
+        }.execute();
+    }
+
+    private void showEventDemo() {
+
+        JButton okButton = new JButton("OK");
+        JButton submitButton = new JButton("Submit");
+        JButton cancelButton = new JButton("Cancel");
+
+        okButton.setActionCommand("OK");
+        submitButton.setActionCommand("Submit");
+        cancelButton.setActionCommand("Cancel");
+
+        okButton.addActionListener(new ButtonClickListener());
+        submitButton.addActionListener(new ButtonClickListener());
+        cancelButton.addActionListener(new ButtonClickListener());
+
+        controlPanel.add(okButton);
+        controlPanel.add(submitButton);
+        controlPanel.add(cancelButton);
+
+        mainFrame.setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == cut)
+            ta.cut();
+        if (e.getSource() == paste)
+            ta.paste();
+        if (e.getSource() == copy)
+            ta.copy();
+        if (e.getSource() == selectAll)
+            ta.selectAll();
+    }
+
+    private class ButtonClickListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String command = e.getActionCommand();
+
+            if (command.equals("OK")) {
+                statusLabel.setText("Ok Button clicked.");
+            } else if (command.equals("Submit")) {
+                statusLabel.setText("Submit Button clicked.");
+            } else {
+                statusLabel.setText("Cancel Button clicked.");
+            }
+        }
+    }
+}
