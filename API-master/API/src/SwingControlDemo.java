@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.ImageObserver;
 import javax.swing.*;
 
 public class SwingControlDemo implements ActionListener {
@@ -27,7 +28,7 @@ public class SwingControlDemo implements ActionListener {
 
     private void prepareGUI() {
         mainFrame = new JFrame("Java SWING Examples");
-        mainFrame.setSize(WIDTH, HEIGHT);
+        mainFrame.setSize(800, 600);
         mainFrame.setLayout(new BorderLayout(5, 5));
 
         //menu at top

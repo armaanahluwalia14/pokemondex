@@ -39,9 +39,6 @@ public class ReadJson {
         if (code == 404) {
             throw new IOException("No Pokemon named \"" + clean + "\" was found.");
         }
-        if (code != 200) {
-            throw new IOException("Failed : HTTP error code : " + code);
-        }
 
         StringBuilder total = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
