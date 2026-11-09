@@ -8,20 +8,26 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import java.util.List;
+
+
 
 public class ReadJson {
 
-    public static void main(String[] args) {
-        try {
-            JSONObject pokemon = fetchPokemon("ditto");
-            System.out.println(describe(pokemon));
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
+//    public void main(String[] args) {
+//        try {
+//
+//            ReadJson readJson = new ReadJson();
+//
+//            JSONObject pokemon = readJson.fetchPokemon("ditto");
+//            System.out.println(readJson.describe(pokemon));
+//        } catch (Exception e) {
+//            System.out.println(e.getMessage());
+//        }
+//    }
 
 
-    public static JSONObject fetchPokemon(String name) throws IOException, ParseException {
+    public JSONObject fetchPokemon(String name) throws IOException, ParseException {
         String clean = name.trim().toLowerCase();
         if (clean.isEmpty()) {
             throw new IOException("Type a Pokemon name first.");
@@ -53,7 +59,7 @@ public class ReadJson {
         return (JSONObject) new JSONParser().parse(total.toString());
     }
 
-    public static String describe(JSONObject pokemon) {
+    public String describe(JSONObject pokemon) {
         String name = (String) pokemon.get("name");
         Long height = (Long) pokemon.get("height");
         Long weight = (Long) pokemon.get("weight");
@@ -74,5 +80,9 @@ public class ReadJson {
                 + "Height: " + height + "\n"
                 + "Weight: " + weight + "\n"
                 + "Abilities: " + abilities;
+
     }
-}
+
+
+
+    }

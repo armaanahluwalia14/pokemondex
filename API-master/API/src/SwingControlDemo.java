@@ -3,6 +3,11 @@ import java.awt.event.*;
 import java.awt.image.ImageObserver;
 import javax.swing.*;
 
+import org.json.simple.JSONObject;
+
+//public class SwingControlDemo{
+
+
 public class SwingControlDemo implements ActionListener {
     private JFrame mainFrame;
     private JLabel statusLabel;
@@ -15,15 +20,12 @@ public class SwingControlDemo implements ActionListener {
     private JButton searchButton;
     private JTextArea ta;
 
-    public SwingControlDemo() {
-        prepareGUI();
+    public static void main(String[] args) {
+        SwingControlDemo project = new SwingControlDemo();
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            SwingControlDemo swingControlDemo = new SwingControlDemo();
-            swingControlDemo.showEventDemo();
-        });
+    public SwingControlDemo() {
+        prepareGUI();
     }
 
     private void prepareGUI() {
@@ -53,14 +55,24 @@ public class SwingControlDemo implements ActionListener {
         mb.add(edit);
         mb.add(help);
         mainFrame.setJMenuBar(mb);
-        //end menu at top
-
 
         searchPanel = new JPanel(new BorderLayout(5, 5));
         nameField = new JTextField("ditto");
         searchButton = new JButton("Search");
-        searchButton.addActionListener(e -> searchPokemon());
-        nameField.addActionListener(e -> searchPokemon());
+        searchButton.addActionListener(e -> {
+            try {
+                searchPokemon();
+            } catch (Exception ex) {
+                ta.setText("Error: " + ex.getMessage());
+            }
+        });
+        nameField.addActionListener(e -> {
+            try {
+                searchPokemon();
+            } catch (Exception ex) {
+                ta.setText("Error: " + ex.getMessage());
+            }
+        });
         searchPanel.add(new JLabel("Pokemon:"), BorderLayout.WEST);
         searchPanel.add(nameField, BorderLayout.CENTER);
         searchPanel.add(searchButton, BorderLayout.EAST);
@@ -84,13 +96,15 @@ public class SwingControlDemo implements ActionListener {
         mainFrame.setVisible(true);
     }
 
-    private void searchPokemon() {
-
+    private void searchPokemon() throws Exception {
         statusLabel.setText("Search clicked: " + nameField.getText().trim());
+
+        ReadJson api = new ReadJson();
+        JSONObject json = api.fetchPokemon(nameField.getText().trim());
+        ta.setText(api.describe(json));
     }
 
     private void showEventDemo() {
-
         JButton okButton = new JButton("OK");
         JButton submitButton = new JButton("Submit");
         JButton cancelButton = new JButton("Cancel");
@@ -121,7 +135,7 @@ public class SwingControlDemo implements ActionListener {
         if (e.getSource() == selectAll)
             ta.selectAll();
     }
-//
+
     private class ButtonClickListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String command = e.getActionCommand();
@@ -136,3 +150,4 @@ public class SwingControlDemo implements ActionListener {
         }
     }
 }
+
