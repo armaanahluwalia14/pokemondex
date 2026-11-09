@@ -69,7 +69,7 @@ public class ReadJson {
                 abilities.append(ability.get("name"));
             }
         }
-
+//
         return "Name: " + name + "\n"
                 + "Height: " + height + "\n"
                 + "Weight: " + weight + "\n"

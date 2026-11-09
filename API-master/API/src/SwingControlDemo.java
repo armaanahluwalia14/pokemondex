@@ -121,7 +121,7 @@ public class SwingControlDemo implements ActionListener {
         if (e.getSource() == selectAll)
             ta.selectAll();
     }
-
+//
     private class ButtonClickListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String command = e.getActionCommand();
