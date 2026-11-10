@@ -148,7 +148,7 @@ public class SwingControlDemo implements ActionListener {
                     nameField.setText(String.valueOf(currentPokemonId));
                     searchPokemon();
                 } else {
-                    statusLabel.setText("Already at the first Pokémon!");
+                    statusLabel.setText("No Pokemon selected");
                 }
             } else {
                 statusLabel.setText(command + " Button clicked.");
