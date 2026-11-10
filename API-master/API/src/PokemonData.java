@@ -1,10 +1,8 @@
 import java.util.List;
 
-    public class PokemonData {
-        private String name;
-        private long height;
-        private long weight;
-        public List<String> abilities;
-
-    }
-
+public class PokemonData {
+    public String name;
+    public long height;
+    public long weight;
+    public List<String> abilities;
+}

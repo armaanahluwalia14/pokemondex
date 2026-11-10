@@ -1,14 +1,12 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.ImageObserver;
 import javax.swing.*;
 
-import org.json.simple.JSONObject;
-
-//public class SwingControlDemo{
-
-
 public class SwingControlDemo implements ActionListener {
+    public static void main(String[] args) {
+        new SwingControlDemo();
+    }
+
     private JFrame mainFrame;
     private JLabel statusLabel;
     private JPanel searchPanel;
@@ -20,9 +18,7 @@ public class SwingControlDemo implements ActionListener {
     private JButton searchButton;
     private JTextArea ta;
 
-    public static void main(String[] args) {
-        SwingControlDemo project = new SwingControlDemo();
-    }
+    private int currentPokemonId = 1;
 
     public SwingControlDemo() {
         prepareGUI();
@@ -33,7 +29,6 @@ public class SwingControlDemo implements ActionListener {
         mainFrame.setSize(800, 600);
         mainFrame.setLayout(new BorderLayout(5, 5));
 
-        //menu at top
         cut = new JMenuItem("cut");
         copy = new JMenuItem("copy");
         paste = new JMenuItem("paste");
@@ -47,33 +42,18 @@ public class SwingControlDemo implements ActionListener {
         file = new JMenu("File");
         edit = new JMenu("Edit");
         help = new JMenu("Help");
-        edit.add(cut);
-        edit.add(copy);
-        edit.add(paste);
-        edit.add(selectAll);
-        mb.add(file);
-        mb.add(edit);
-        mb.add(help);
+        edit.add(cut); edit.add(copy); edit.add(paste); edit.add(selectAll);
+        mb.add(file); mb.add(edit); mb.add(help);
         mainFrame.setJMenuBar(mb);
 
         searchPanel = new JPanel(new BorderLayout(5, 5));
-        nameField = new JTextField("ditto");
+        nameField = new JTextField(String.valueOf(currentPokemonId));
         searchButton = new JButton("Search");
-        searchButton.addActionListener(e -> {
-            try {
-                searchPokemon();
-            } catch (Exception ex) {
-                ta.setText("Error: " + ex.getMessage());
-            }
-        });
-        nameField.addActionListener(e -> {
-            try {
-                searchPokemon();
-            } catch (Exception ex) {
-                ta.setText("Error: " + ex.getMessage());
-            }
-        });
-        searchPanel.add(new JLabel("Pokemon:"), BorderLayout.WEST);
+
+        searchButton.addActionListener(e -> searchPokemon());
+        nameField.addActionListener(e -> searchPokemon());
+
+        searchPanel.add(new JLabel("Pokemon (Name or ID):"), BorderLayout.WEST);
         searchPanel.add(nameField, BorderLayout.CENTER);
         searchPanel.add(searchButton, BorderLayout.EAST);
         mainFrame.add(searchPanel, BorderLayout.NORTH);
@@ -81,9 +61,29 @@ public class SwingControlDemo implements ActionListener {
         ta = new JTextArea();
         mainFrame.add(new JScrollPane(ta), BorderLayout.CENTER);
 
-        statusLabel = new JLabel("", JLabel.CENTER);
-        controlPanel = new JPanel(new GridLayout(1, 3, 5, 5));
-        JPanel southPanel = new JPanel(new GridLayout(2, 1));
+        statusLabel = new JLabel("Ready", JLabel.CENTER);
+        controlPanel = new JPanel(new GridLayout(1, 5, 5, 5));
+
+        JButton okButton = new JButton("OK");
+        JButton submitButton = new JButton("Submit");
+        JButton cancelButton = new JButton("Cancel");
+        JButton nextButton = new JButton("Next");
+        JButton backButton = new JButton("Back");
+
+        nextButton.setActionCommand("Next");
+        backButton.setActionCommand("Back");
+
+        ButtonClickListener btnListener = new ButtonClickListener();
+        okButton.addActionListener(btnListener);
+        submitButton.addActionListener(btnListener);
+        cancelButton.addActionListener(btnListener);
+        nextButton.addActionListener(btnListener);
+        backButton.addActionListener(btnListener);
+
+        controlPanel.add(backButton);
+        controlPanel.add(nextButton);
+
+        JPanel southPanel = new JPanel(new GridLayout(2, 1, 5, 5));
         southPanel.add(controlPanel);
         southPanel.add(statusLabel);
         mainFrame.add(southPanel, BorderLayout.SOUTH);
@@ -93,61 +93,66 @@ public class SwingControlDemo implements ActionListener {
                 System.exit(0);
             }
         });
+
+        searchPokemon();
         mainFrame.setVisible(true);
     }
 
-    private void searchPokemon() throws Exception {
-        statusLabel.setText("Search clicked: " + nameField.getText().trim());
+    private void searchPokemon() {
+        String query = nameField.getText().trim();
+        statusLabel.setText("Searching for: " + query);
 
-        ReadJson api = new ReadJson();
-        JSONObject json = api.fetchPokemon(nameField.getText().trim());
-        ta.setText(api.describe(json));
+        if (query.matches("\\d+")) {
+            currentPokemonId = Integer.parseInt(query);
+        }
+
+        try {
+            ReadJson api = new ReadJson();
+            PokemonData data = api.fetchPokemon(query);
+            displayPokemonData(data);
+        } catch (Exception ex) {
+            ta.setText("Could not find data for query: " + query);
+        }
     }
 
-    private void showEventDemo() {
-        JButton okButton = new JButton("OK");
-        JButton submitButton = new JButton("Submit");
-        JButton cancelButton = new JButton("Cancel");
+    private void displayPokemonData(PokemonData data) {
+        String displayAbilities = (data.abilities != null) ? String.join(", ", data.abilities) : "None";
 
-        okButton.setActionCommand("OK");
-        submitButton.setActionCommand("Submit");
-        cancelButton.setActionCommand("Cancel");
+        String text = "Name: " + data.name + "\n"
+                + "Height: " + data.height + "\n"
+                + "Weight: " + data.weight + "\n"
+                + "Abilities: " + displayAbilities;
 
-        okButton.addActionListener(new ButtonClickListener());
-        submitButton.addActionListener(new ButtonClickListener());
-        cancelButton.addActionListener(new ButtonClickListener());
-
-        controlPanel.add(okButton);
-        controlPanel.add(submitButton);
-        controlPanel.add(cancelButton);
-
-        mainFrame.setVisible(true);
+        ta.setText(text);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == cut)
-            ta.cut();
-        if (e.getSource() == paste)
-            ta.paste();
-        if (e.getSource() == copy)
-            ta.copy();
-        if (e.getSource() == selectAll)
-            ta.selectAll();
+        if (e.getSource() == cut) ta.cut();
+        if (e.getSource() == paste) ta.paste();
+        if (e.getSource() == copy) ta.copy();
+        if (e.getSource() == selectAll) ta.selectAll();
     }
 
     private class ButtonClickListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             String command = e.getActionCommand();
 
-            if (command.equals("OK")) {
-                statusLabel.setText("Ok Button clicked.");
-            } else if (command.equals("Submit")) {
-                statusLabel.setText("Submit Button clicked.");
+            if (command.equals("Next")) {
+                currentPokemonId++;
+                nameField.setText(String.valueOf(currentPokemonId));
+                searchPokemon();
+            } else if (command.equals("Back")) {
+                if (currentPokemonId > 1) {
+                    currentPokemonId--;
+                    nameField.setText(String.valueOf(currentPokemonId));
+                    searchPokemon();
+                } else {
+                    statusLabel.setText("Already at the first Pokémon!");
+                }
             } else {
-                statusLabel.setText("Cancel Button clicked.");
+                statusLabel.setText(command + " Button clicked.");
             }
         }
     }
 }
-
