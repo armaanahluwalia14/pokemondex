@@ -1,8 +1,8 @@
-import java.util.List;
-
 public class PokemonData {
+    public long id;
     public String name;
-    public long height;
-    public long weight;
-    public List<String> abilities;
+    public long baseExperience;
+    public String abilities;
+    public String types;
+    public String imageUrl;
 }
